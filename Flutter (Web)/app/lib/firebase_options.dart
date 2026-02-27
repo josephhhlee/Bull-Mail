@@ -53,11 +53,11 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDgqTl7qUbH6y6ig9XtIY9o1KoiNjZLwUw',
-    appId: '1:349721789427:web:900e0e14b9cbad3cb44886',
-    messagingSenderId: '349721789427',
-    projectId: 'bull-mail-471304',
-    authDomain: 'bull-mail-471304.firebaseapp.com',
-    storageBucket: 'bull-mail-471304.firebasestorage.app',
+    apiKey: '',
+    appId: '',
+    messagingSenderId: '',
+    projectId: '',
+    authDomain: '',
+    storageBucket: '',
   );
 }
