@@ -17,15 +17,11 @@ Bull Mail is a smart platform that **identifies high-impact stock news daily** b
 
 ### 1. Platform Flow
 
-<video src="https://storage.googleapis.com/bull-mail-471304.appspot.com/videos/Bull%20Mail%20Flow.mp4" controls="controls" width="100%">
-  Your browser does not support the video tag.
-</video>
+[![Watch Platform Flow](https://img.shields.io/badge/▶_Watch_Video-Platform_Flow-blue?style=for-the-badge)](https://storage.googleapis.com/bull-mail-471304.appspot.com/videos/Bull%20Mail%20Flow.mp4)
 
 ### 2. Email Example
 
-<video src="https://storage.googleapis.com/bull-mail-471304.appspot.com/videos/Email%20Example.mp4" controls="controls" width="100%">
-  Your browser does not support the video tag.
-</video>
+[![Watch Email Example](https://img.shields.io/badge/▶_Watch_Video-Email_Example-blue?style=for-the-badge)](https://storage.googleapis.com/bull-mail-471304.appspot.com/videos/Email%20Example.mp4)
 
 ---
 
