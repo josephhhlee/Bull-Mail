@@ -1,3 +1,4 @@
+import 'package:app/resource.dart';
 import 'package:app/stock_service.dart';
 import 'package:app/theme.dart';
 import 'package:flutter/material.dart';
@@ -5,29 +6,27 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class StockInputPage extends StatefulWidget {
-  final VoidCallback onBack;
   final VoidCallback onNext;
   final TextEditingController? emailController;
 
-  const StockInputPage({
-    super.key,
-    required this.onBack,
-    required this.onNext,
-    required this.emailController,
-  });
+  const StockInputPage({super.key, required this.onNext, required this.emailController});
 
   @override
   State<StockInputPage> createState() => _StockInputPageState();
 }
 
 class _StockInputPageState extends State<StockInputPage> {
+  final FocusNode _focusNode = FocusNode();
   final TextEditingController _symbolController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+
+  bool get isMobileSize => MediaQuery.of(context).size.width <= 500;
 
   @override
   void dispose() {
     _symbolController.dispose();
     _scrollController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -45,7 +44,8 @@ class _StockInputPageState extends State<StockInputPage> {
       context.read<SelectedStockCubit>().addStock(stock);
       stockCubit.clearResult();
       _symbolController.clear();
-      Future.delayed(Duration(milliseconds: 300), () {
+      _focusNode.requestFocus();
+      Future.delayed(Duration(milliseconds: 600), () {
         _scrollController.animateTo(
           _scrollController.position.maxScrollExtent,
           duration: const Duration(milliseconds: 500),
@@ -60,45 +60,94 @@ class _StockInputPageState extends State<StockInputPage> {
     return Column(
       children: [
         Expanded(
-          child: SingleChildScrollView(
-            controller: _scrollController,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                _buildTitle(),
-                const SizedBox(height: 20),
-                _buildInputSection(),
-                const SizedBox(height: 20),
-                _buildSearchResult(),
-                const SizedBox(height: 20),
-                _buildSelectedStocks(),
-              ],
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 700),
+              child: Padding(
+                padding: const EdgeInsets.all(15),
+                child: SingleChildScrollView(
+                  controller: _scrollController,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      _buildTitle(),
+
+                      const SizedBox(height: 20),
+
+                      _buildInputSection(),
+
+                      const SizedBox(height: 15),
+
+                      _buildSearchResult(),
+
+                      const SizedBox(height: 15),
+
+                      _buildSelectedStocks(),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ),
+
+        const SizedBox(height: 20),
+
+        _buildNextButton(),
+
         const SizedBox(height: 30),
-        _buildActionButtons(),
       ],
     );
   }
 
   Widget _buildTitle() {
-    return const Text(
-      'Enter Stock Symbols',
-      style: AppTheme.headline2,
-      textAlign: TextAlign.center,
+    return Column(
+      children: const [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Logo(size: 55),
+            SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                'Build Your Watchlist',
+                softWrap: true,
+                style: AppTheme.headline2,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: 20),
+        Text(
+          'Add the stocks you want Bull Mail to monitor.\nYou will receive important news about them daily.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 15, height: 1.4, color: Colors.black54),
+        ),
+      ],
     );
   }
 
   Widget _buildInputSection() {
-    return Row(
+    return Wrap(
+      spacing: 12,
+      runSpacing: 12,
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
-        Expanded(child: _buildTextField()),
-        const SizedBox(width: 10),
-        ElevatedButton(
-          onPressed: _searchStock,
-          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.background),
-          child: const Text('Search', style: AppTheme.button),
+        ConstrainedBox(constraints: const BoxConstraints(maxWidth: 500), child: _buildTextField()),
+        SizedBox(
+          height: 54,
+          child: ElevatedButton(
+            onPressed: _searchStock,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryVariant,
+              padding: const EdgeInsets.symmetric(horizontal: 22),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            child: const Text('Search', style: AppTheme.button),
+          ),
         ),
       ],
     );
@@ -106,20 +155,35 @@ class _StockInputPageState extends State<StockInputPage> {
 
   Widget _buildTextField() {
     return TextField(
+      focusNode: _focusNode,
       controller: _symbolController,
       autofocus: true,
       maxLength: 7,
+      style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600, letterSpacing: 1),
       decoration: InputDecoration(
-        hintText: 'Stock symbol (e.g., AAPL)',
+        hintText: 'Search ticker (AAPL, TSLA, NVDA...)',
         counterText: '',
+        filled: true,
+        fillColor: Colors.white,
+        contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 18),
+        prefixIcon: Icon(Icons.search, color: AppTheme.primaryVariant),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(14),
+          borderSide: BorderSide(color: AppTheme.primary, width: 2),
+        ),
         suffixIcon: _symbolController.text.isNotEmpty
             ? IconButton(
-                icon: const Icon(Icons.clear, color: Colors.grey),
-                hoverColor: Colors.transparent,
-                onPressed: () => setState(() {
-                  _symbolController.clear();
-                  context.read<StockCubit>().clearResult();
-                }),
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  setState(() {
+                    _symbolController.clear();
+                    context.read<StockCubit>().clearResult();
+                  });
+                },
               )
             : null,
       ),
@@ -128,7 +192,6 @@ class _StockInputPageState extends State<StockInputPage> {
         FilteringTextInputFormatter.allow(RegExp(r'[A-Za-z0-9.\-:/+& ]')),
       ],
       textCapitalization: TextCapitalization.characters,
-      textAlign: TextAlign.center,
       cursorColor: AppTheme.primary,
       onSubmitted: (_) => _searchStock(),
       onChanged: (_) => setState(() {}),
@@ -169,18 +232,78 @@ class _StockInputPageState extends State<StockInputPage> {
   }
 
   Widget _buildStockCard(stock) {
-    return Card(
+    return Container(
       key: ValueKey(stock.symbol),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      elevation: 4,
-      child: ListTile(
-        title: Text(stock.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(stock.symbol, style: const TextStyle(color: Colors.grey)),
-        trailing: ElevatedButton(
-          onPressed: _selectStock,
-          style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primary),
-          child: const Text('Add', style: AppTheme.button),
-        ),
+      constraints: const BoxConstraints(maxWidth: 500),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(blurRadius: 20, offset: const Offset(0, 6), color: Colors.black.withAlpha(15)),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      child: Row(
+        children: [
+          if (!isMobileSize) ...[
+            CircleAvatar(
+              radius: 22,
+              backgroundColor: AppTheme.primaryVariant,
+              child: Text(
+                stock.symbol[0],
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(width: 12),
+          ],
+
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  stock.name,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                    fontSize: 16,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(stock.symbol, style: const TextStyle(color: Colors.black54, fontSize: 13)),
+              ],
+            ),
+          ),
+
+          Focus(
+            autofocus: true,
+            onKeyEvent: (node, event) {
+              if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.enter) {
+                _selectStock();
+                return KeyEventResult.handled;
+              }
+              return KeyEventResult.ignored;
+            },
+            child: ElevatedButton(
+              onPressed: _selectStock,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryVariant,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.add_rounded, size: 18, color: AppTheme.textPrimary),
+                  if (!isMobileSize) ...[
+                    const SizedBox(width: 6),
+                    const Text("Add", style: AppTheme.button),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -188,51 +311,64 @@ class _StockInputPageState extends State<StockInputPage> {
   Widget _buildSelectedStocks() {
     return BlocBuilder<SelectedStockCubit, SelectedStockState>(
       builder: (context, state) {
-        return Padding(
-          padding: const EdgeInsets.all(10),
-          child: Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: state.selectedStocks
-                .map(
-                  (stock) => _BouncyChip(
-                    key: ValueKey(stock.symbol),
-                    stock: stock,
-                    onDeleted: () => context.read<SelectedStockCubit>().removeStock(stock),
-                  ),
-                )
-                .toList(),
-          ),
+        if (state.selectedStocks.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text(
+              "Your Watchlist",
+              textAlign: TextAlign.center,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+
+            const SizedBox(height: 12),
+
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: state.selectedStocks
+                  .map(
+                    (stock) => _BouncyChip(
+                      key: ValueKey(stock.symbol),
+                      stock: stock,
+                      onDeleted: () => context.read<SelectedStockCubit>().removeStock(stock),
+                    ),
+                  )
+                  .toList(),
+            ),
+          ],
         );
       },
     );
   }
 
-  Widget _buildActionButtons() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        ElevatedButton(
-          onPressed: widget.onBack,
-          child: const Text('Back', style: AppTheme.button),
-        ),
-        BlocBuilder<SelectedStockCubit, SelectedStockState>(
-          builder: (context, state) {
-            return ElevatedButton(
-              onPressed: () {
-                if (state.selectedStocks.isNotEmpty) {
-                  widget.onNext.call();
-                } else {
-                  ScaffoldMessenger.of(
-                    context,
-                  ).showSnackBar(const SnackBar(content: Text('Please add at least one stock')));
-                }
-              },
-              child: const Text('Review', style: AppTheme.button),
-            );
-          },
-        ),
-      ],
+  Widget _buildNextButton() {
+    return BlocBuilder<SelectedStockCubit, SelectedStockState>(
+      builder: (context, state) {
+        return SizedBox(
+          width: 240,
+          height: 54,
+          child: ElevatedButton(
+            onPressed: () {
+              if (state.selectedStocks.isNotEmpty) {
+                widget.onNext.call();
+              } else {
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Please add at least one stock')));
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primary,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            child: const Text('Confirm Watchlist', style: AppTheme.button),
+          ),
+        );
+      },
     );
   }
 }
@@ -281,14 +417,17 @@ class _BouncyChipState extends State<_BouncyChip> with SingleTickerProviderState
     return ScaleTransition(
       scale: _scale,
       child: Chip(
-        label: Text(widget.stock.symbol),
+        label: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Text(widget.stock.symbol, style: const TextStyle(fontWeight: FontWeight.bold)),
+        ),
+        deleteIcon: const Icon(Icons.close, size: 18),
         onDeleted: _handleDelete,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-          side: BorderSide(color: AppTheme.info, width: 1.5),
+          borderRadius: BorderRadius.circular(20),
+          side: BorderSide(color: AppTheme.primary.withAlpha(128)),
         ),
-        backgroundColor: AppTheme.background,
-        deleteIconColor: AppTheme.primary,
+        backgroundColor: AppTheme.primary.withAlpha(20),
       ),
     );
   }

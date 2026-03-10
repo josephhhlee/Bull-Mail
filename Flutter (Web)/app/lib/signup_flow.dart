@@ -1,26 +1,24 @@
 import 'package:app/email_page.dart';
-import 'package:app/fequency_page.dart';
 import 'package:app/review_page.dart';
 import 'package:app/stock_list_page.dart';
 import 'package:app/thank_you_page.dart';
 import 'package:flutter/material.dart';
 
-class EntryFlow extends StatefulWidget {
-  const EntryFlow({super.key});
+class SignUpFlow extends StatefulWidget {
+  const SignUpFlow({super.key});
 
   @override
-  State<EntryFlow> createState() => _EntryFlowState();
+  State<SignUpFlow> createState() => _SignUpFlowState();
 }
 
-class _EntryFlowState extends State<EntryFlow> {
+class _SignUpFlowState extends State<SignUpFlow> {
   final PageController _controller = PageController();
   int _currentPage = 0;
 
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _frequencyController = TextEditingController();
 
   void _nextPage() {
-    if (_currentPage < 4) {
+    if (_currentPage < 3) {
       _controller.nextPage(duration: const Duration(milliseconds: 500), curve: Curves.easeInOut);
     }
   }
@@ -56,6 +54,7 @@ class _EntryFlowState extends State<EntryFlow> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
@@ -69,35 +68,18 @@ class _EntryFlowState extends State<EntryFlow> {
           physics: const NeverScrollableScrollPhysics(),
           onPageChanged: (index) => setState(() => _currentPage = index),
           children: [
-            pageConstraint(EmailPage(onNext: _nextPage, controller: _emailController)),
+            pageConstraint(StockInputPage(onNext: _nextPage, emailController: _emailController)),
             pageConstraint(
-              FrequencyPage(
-                onNext: _nextPage,
-                onBack: _previousPage,
-                controller: _frequencyController,
-              ),
-            ),
-            pageConstraint(
-              StockInputPage(
-                onNext: _nextPage,
-                onBack: _previousPage,
-                emailController: _emailController,
-              ),
+              EmailPage(onNext: _nextPage, onBack: _previousPage, controller: _emailController),
             ),
             pageConstraint(
               ReviewPage(
                 onBack: _previousPage,
                 onNext: _nextPage,
                 emailController: _emailController,
-                frequencyController: _frequencyController,
               ),
             ),
-            pageConstraint(
-              ThankYouPage(
-                emailController: _emailController,
-                frequencyController: _frequencyController,
-              ),
-            ),
+            pageConstraint(ThankYouPage(emailController: _emailController)),
           ],
         ),
       ),

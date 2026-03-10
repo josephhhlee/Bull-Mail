@@ -6,6 +6,7 @@ class AppTheme {
 
   /// ------------------ Colors ------------------
   static const Color primary = Colors.orange;
+  static final Color primaryVariant = Colors.orange[200]!;
   static const Color secondary = Colors.white;
 
   static final Color background = Colors.grey[200]!;

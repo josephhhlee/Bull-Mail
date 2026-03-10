@@ -15,7 +15,6 @@ class VerifyPage extends StatefulWidget {
 
 class _VerifyPageState extends State<VerifyPage> {
   bool? _success;
-  String? _frequency;
 
   @override
   void initState() {
@@ -45,7 +44,6 @@ class _VerifyPageState extends State<VerifyPage> {
       if (expiry == null || expiry.toDate().isBefore(DateTime.now())) {
         _success = false;
       } else {
-        _frequency = data['frequency'] as String?;
         _success = true;
         await doc.reference.update({
           'isVerified': true,
@@ -61,25 +59,12 @@ class _VerifyPageState extends State<VerifyPage> {
     setState(() {});
   }
 
-  String message() {
-    switch (_frequency!.toUpperCase()) {
-      case 'DAILY':
-        return 'Emails are delivered around 9:30 PM (GMT+8).';
-      case 'WEEKLY':
-        return 'Emails go out at approximately 9:30 PM (GMT+8), and updates are issued weekly on Mondays.';
-      case 'MONTHLY':
-        return 'Emails go out at approximately 9:30 PM (GMT+8), and updates are delivered on the 1st of every month';
-      default:
-        return '';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(15),
           child: _success == null
               ? const CircularProgressIndicator()
               : _success == false
@@ -118,12 +103,12 @@ class _VerifyPageState extends State<VerifyPage> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      'You will start receiving ${_frequency?.toLowerCase()} emails.',
+                      'You will start receiving daily updates for the stocks in your watchlist.',
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      message(),
+                      'Email summaries are typically sent around 7:30 PM (GMT+8) each day whenever there are important updates or news.',
                       textAlign: TextAlign.center,
                       style: TextStyle(color: AppTheme.info),
                     ),
